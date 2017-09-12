@@ -138,6 +138,7 @@ entity msx is
 		-- Video
 		cnt_hor_o		: out std_logic_vector( 8 downto 0);
 		cnt_ver_o		: out std_logic_vector( 7 downto 0);
+		pixel_clock_o	: out std_logic;
 		rgb_r_o			: out std_logic_vector( 3 downto 0);
 		rgb_g_o			: out std_logic_vector( 3 downto 0);
 		rgb_b_o			: out std_logic_vector( 3 downto 0);
@@ -353,6 +354,7 @@ begin
 		scanline_en_i	=> scanline_en_s,
 		cnt_hor_o		=> cnt_hor_o,
 		cnt_ver_o		=> cnt_ver_o,
+		pixel_clock_o	=> pixel_clock_o,
 		rgb_r_o			=> rgb_r_o,
 		rgb_g_o			=> rgb_g_o,
 		rgb_b_o			=> rgb_b_o,

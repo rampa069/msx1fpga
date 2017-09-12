@@ -24,6 +24,13 @@ greybox_tmp
 /synth/wxeda/*.qws
 /synth/wxeda/*.qip
 /synth/wxeda/PLLJ_PLLSPE_INFO.txt
+/synth/mist/db
+/synth/mist/incremental_db
+/synth/mist/output_files
+/synth/mist/simulation/modelsim
+/synth/mist/*.qws
+/synth/mist/*.qip
+/synth/mist/PLLJ_PLLSPE_INFO.txt
 /synth/zxuno/*.html
 /synth/zxuno/_xmsgs
 /synth/zxuno/_ngo

@@ -111,6 +111,7 @@ entity vdp18_core is
 		scanline_en_i	: in  std_logic;
 		cnt_hor_o		: out std_logic_vector( 8 downto 0);
 		cnt_ver_o		: out std_logic_vector( 7 downto 0);
+		pixel_clock_o	: out std_logic;
 		rgb_r_o			: out std_logic_vector(0 to 3);
 		rgb_g_o			: out std_logic_vector(0 to 3);
 		rgb_b_o			: out std_logic_vector(0 to 3);
@@ -463,9 +464,10 @@ begin
 
 	vo0: if video_opt_g = 0 generate
 
-		col_s			<= col_rgb_s;
-		hsync_n_o	<= rgb_hsync_n_s;
-		vsync_n_o	<= rgb_vsync_n_s;
+		col_s				<= col_rgb_s;
+		hsync_n_o		<= rgb_hsync_n_s;
+		vsync_n_o		<= rgb_vsync_n_s;
+		pixel_clock_o	<= to_std_logic_f(clk_en_5m37_s);
 
 	end generate;
 
@@ -477,12 +479,15 @@ begin
 		rgb_b_o			<= (others => '0');
 		hsync_n_o		<= rgb_hsync_n_s;
 		vsync_n_o		<= rgb_vsync_n_s;
+		pixel_clock_o	<= to_std_logic_f(clk_en_5m37_s);
 
 	end generate;
 
 	vo1_2: if video_opt_g = 1 or video_opt_g = 2 generate
 
-		col_s	<= col_vga_s	when vga_en_i = '1' or video_opt_g = 2	else col_rgb_s;
+		col_s <= col_vga_s	when vga_en_i = '1' or video_opt_g = 2	else col_rgb_s;
+
+		pixel_clock_o <= to_std_logic_f(clk_en_10m7_s)	when vga_en_i = '1' or video_opt_g = 2	else to_std_logic_f(clk_en_5m37_s);
 
 		scandbl: entity work.dblscan
 		port map (

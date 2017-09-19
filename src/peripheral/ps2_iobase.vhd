@@ -19,15 +19,17 @@ USE ieee.numeric_std.all;
 
 entity ps2_iobase is
 	port(
-		enable_i			: in    std_logic;							-- Enable
-		clock_i			: in    std_logic;							-- system clock
-		reset_i			: in    std_logic;							-- Reset when '1'
-		ps2_data_io		: inout std_logic;							-- PS2 data pin
-		ps2_clk_io		: inout std_logic;							-- PS2 clock pin
-		data_rdy_i		: in    std_logic;							-- Rise this to signal data is ready to be sent to device
-		data_i			: in    std_logic_vector(7 downto 0);	-- Data to be sent to device
-		data_rdy_o		: out   std_logic;							-- '1' when data from device has arrived
-		data_o			: out   std_logic_vector(7 downto 0)	-- Data from device
+		enable_i			: in  std_logic;							-- Enable
+		clock_i			: in  std_logic;							-- system clock
+		reset_i			: in  std_logic;							-- Reset when '1'
+		ps2_clk_i		: in  std_logic;
+		ps2_clk_o		: out std_logic;
+		ps2_data_i		: in  std_logic;
+		ps2_data_o		: out std_logic;
+		data_rdy_i		: in  std_logic;							-- Rise this to signal data is ready to be sent to device
+		data_i			: in  std_logic_vector(7 downto 0);	-- Data to be sent to device
+		data_rdy_o		: out std_logic;							-- '1' when data from device has arrived
+		data_o			: out std_logic_vector(7 downto 0)	-- Data from device
 	);
 end;
 
@@ -57,8 +59,8 @@ begin
 			clk_sync_v := "00";
 			dat_sync_v := "00";
 		elsif rising_edge(clock_i) then
-			clk_sync_v := clk_sync_v(0) & ps2_clk_io;
-			dat_sync_v := dat_sync_v(0) & ps2_data_io;
+			clk_sync_v := clk_sync_v(0) & ps2_clk_i;
+			dat_sync_v := dat_sync_v(0) & ps2_data_i;
 		end if;
 		clk_syn_s <= clk_sync_v(1);
 		dat_syn_s <= dat_sync_v(1);
@@ -154,7 +156,7 @@ begin
 		variable count_v	: integer range 0 to US100CNT + 101;
 	begin
 		if enable_i = '0' or reset_i = '1' or sigsendend_s = '1' then
-			ps2_clk_io		<= 'Z';
+			ps2_clk_o		<= 'Z';
 			sigclkreleased	<= '1';
 			sigclkheld		<= '0';
 			count_v				:= 0;
@@ -162,16 +164,16 @@ begin
 			if sigsending_s = '1' then
 				if count_v < US100CNT + 50 then
 					count_v        := count_v + 1;
-					ps2_clk_io     <= '0';
+					ps2_clk_o      <= '0';
 					sigclkreleased <= '0';
 					sigclkheld     <= '0';
 				elsif count_v < US100CNT + 100 then
 					count_v        := count_v + 1;
-					ps2_clk_io     <= '0';
+					ps2_clk_o      <= '0';
 					sigclkreleased <= '0';
 					sigclkheld     <= '1';
 				else
-					ps2_clk_io     <= 'Z';
+					ps2_clk_o      <= 'Z';
 					sigclkreleased <= '1';
 					sigclkheld     <= '0';
 				end if;
@@ -185,11 +187,11 @@ begin
 		variable count_v	: integer range 0 to 11;
 	begin
 		if enable_i = '0' or reset_i = '1' or sigsending_s = '0' then
-			ps2_data_io		<= 'Z';
+			ps2_data_o		<= 'Z';
 			sigsendend_s	<= '0';			
 			count_v			:= 0;
 		elsif sigclkheld = '1' then
-			ps2_data_io		<= '0';
+			ps2_data_o		<= '0';
 			sigsendend_s 	<= '0';
 			count_v			:= 0;
 		elsif rising_edge(clock_i) then
@@ -197,19 +199,19 @@ begin
 			if clk_nedge_s = '1' and sigclkreleased = '1' and sigsending_s = '1' then
 
 				if count_v >= 0 and count_v < 8 then
-					ps2_data_io		<= hdata_s(count_v);
+					ps2_data_o		<= hdata_s(count_v);
 					sigsendend_s	<= '0';
 				end if;
 				if count_v = 8 then
-					ps2_data_io <= (not (hdata_s(0) xor hdata_s(1) xor hdata_s(2) xor hdata_s(3) xor hdata_s(4) xor hdata_s(5) xor hdata_s(6) xor hdata_s(7)));
+					ps2_data_o    <= (not (hdata_s(0) xor hdata_s(1) xor hdata_s(2) xor hdata_s(3) xor hdata_s(4) xor hdata_s(5) xor hdata_s(6) xor hdata_s(7)));
 					sigsendend_s  <= '0';
 				end if;
 				if count_v = 9 then
-					ps2_data_io		<= 'Z';
+					ps2_data_o		<= 'Z';
 					sigsendend_s	<= '0';
 				end if;			
 				if count_v = 10 then				
-					ps2_data_io		<= 'Z';
+					ps2_data_o		<= 'Z';
 					sigsendend_s	<= '1';
 					count_v			:= 0;
 				end if;

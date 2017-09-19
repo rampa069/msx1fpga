@@ -45,24 +45,26 @@ use ieee.numeric_std.all;
 
 entity keyboard is
 	port (
-		clock_i			: in    std_logic;
-		reset_i			: in    std_logic;
+		clock_i			: in  std_logic;
+		reset_i			: in  std_logic;
 		-- MSX
-		rows_coded_i	: in    std_logic_vector(3 downto 0);
-		cols_o			: out   std_logic_vector(7 downto 0);
-		keymap_addr_i	: in    std_logic_vector(9 downto 0);
-		keymap_data_i	: in    std_logic_vector(7 downto 0);
-		keymap_we_i		: in    std_logic;
+		rows_coded_i	: in  std_logic_vector( 3 downto 0);
+		cols_o			: out std_logic_vector( 7 downto 0);
+		keymap_addr_i	: in  std_logic_vector( 9 downto 0);
+		keymap_data_i	: in  std_logic_vector( 7 downto 0);
+		keymap_we_i		: in  std_logic;
 		-- LEDs
-		led_caps_i		: in    std_logic;
+		led_caps_i		: in  std_logic;
 		-- PS/2 interface
-		ps2_clk_io		: inout std_logic;
-		ps2_data_io		: inout std_logic;
+		ps2_clk_i		: in  std_logic;
+		ps2_clk_o		: out std_logic;
+		ps2_data_i		: in  std_logic;
+		ps2_data_o		: out std_logic;
 		--
-		reset_o			: out   std_logic								:= '0';
-		por_o				: out   std_logic								:= '0';
-		reload_core_o	: out   std_logic								:= '0';
-		extra_keys_o	: out   std_logic_vector(3 downto 0)	-- F11, Print Screen, Scroll Lock, Pause/Break
+		reset_o			: out std_logic								:= '0';
+		por_o				: out std_logic								:= '0';
+		reload_core_o	: out std_logic								:= '0';
+		extra_keys_o	: out std_logic_vector(3 downto 0)	-- F11, Print Screen, Scroll Lock, Pause/Break
 	);
 end entity;
 
@@ -98,8 +100,10 @@ begin
 		enable_i			=> '1',
 		clock_i			=> clock_i,
 		reset_i			=> reset_i,
-		ps2_data_io		=> ps2_data_io,
-		ps2_clk_io		=> ps2_clk_io,
+		ps2_clk_i		=> ps2_clk_i,
+		ps2_clk_o		=> ps2_clk_o,
+		ps2_data_i		=> ps2_data_i,
+		ps2_data_o		=> ps2_data_o,
 		data_rdy_i		=> data_load_s,
 		data_i			=> d_to_send_s,
 		data_rdy_o		=> keyb_valid_s,

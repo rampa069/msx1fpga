@@ -156,7 +156,8 @@ architecture behavior of mist_top is
 	port (
 		pclk, sck, ss, sdi, hs_in, vs_in	: in  std_logic;
 		red_in, blue_in, green_in			: in  std_logic_vector(5 downto 0);
-		red_out, blue_out, green_out		: out std_logic_vector(5 downto 0)
+		red_out, blue_out, green_out		: out std_logic_vector(5 downto 0);
+		osd_enable								: out std_logic
 	);
 	end component osd;
 
@@ -210,8 +211,8 @@ architecture behavior of mist_top is
 	signal vram_addr_s		: std_logic_vector(13 downto 0);		-- 16K
 	signal vram_data_from_s	: std_logic_vector( 7 downto 0);
 	signal vram_data_to_s	: std_logic_vector( 7 downto 0);
-	signal vram_ce_s			: std_logic;
-	signal vram_oe_s			: std_logic;
+--	signal vram_ce_s			: std_logic;
+--	signal vram_oe_s			: std_logic;
 	signal vram_we_s			: std_logic;
 
 	-- Audio
@@ -226,8 +227,8 @@ architecture behavior of mist_top is
 	signal rgb_b_s				: std_logic_vector( 3 downto 0);
 	signal rgb_hsync_n_s		: std_logic;
 	signal rgb_vsync_n_s		: std_logic;
-	signal ntsc_pal_s			: std_logic;
-	signal vga_en_s			: std_logic;
+--	signal ntsc_pal_s			: std_logic;
+--	signal vga_en_s			: std_logic;
 	signal pixel_clock_s		: std_logic;
 
 	-- Keyboard
@@ -315,8 +316,8 @@ begin
 	-- The MSX1
 	the_msx: entity work.msx
 	generic map (
-		hw_id_g			=> 1,
-		hw_txt_g			=> "DE-1 Board",
+		hw_id_g			=> 8,
+		hw_txt_g			=> "MiST Board",
 		hw_version_g	=> X"12",
 		video_opt_g		=> 1,						-- 1 = dblscan configurable
 		ramsize_g		=> 8192
@@ -368,8 +369,8 @@ begin
 		vram_addr_o		=> vram_addr_s,
 		vram_data_i		=> vram_data_from_s,
 		vram_data_o		=> vram_data_to_s,
-		vram_ce_o		=> vram_ce_s,
-		vram_oe_o		=> vram_oe_s,
+		vram_ce_o		=> open,--vram_ce_s,
+		vram_oe_o		=> open,--vram_oe_s,
 		vram_we_o		=> vram_we_s,
 		-- Keyboard
 		rows_o			=> rows_s,
@@ -412,10 +413,10 @@ begin
 		rgb_b_o			=> rgb_b_s,
 		hsync_n_o		=> rgb_hsync_n_s,
 		vsync_n_o		=> rgb_vsync_n_s,
-		ntsc_pal_o		=> ntsc_pal_s,
+		ntsc_pal_o		=> open,--ntsc_pal_s,
 		vga_on_k_i		=> extra_keys_s(2),			-- Print Screen
 		scanline_on_k_i=> '0',--extra_keys_s(1),		-- Scroll Lock
-		vga_en_o			=> vga_en_s,
+		vga_en_o			=> open,--vga_en_s,
 		-- SPI/SD
 		flspi_cs_n_o	=> open,
 		spi_cs_n_o		=> sd_cs_s,
@@ -444,8 +445,10 @@ begin
 		-- LEDs
 		led_caps_i		=> caps_en_s,
 		-- PS/2 interface
-		ps2_clk_io		=> ps2_keyboard_clk_in_s,
-		ps2_data_io		=> ps2_keyboard_dat_in_s,
+		ps2_clk_i		=> ps2_keyboard_clk_in_s,
+		ps2_clk_o		=> open,
+		ps2_data_i		=> ps2_keyboard_dat_in_s,
+		ps2_data_o		=> open,
 		--
 		reset_o			=> soft_reset_k_s,
 		por_o				=> soft_por_s,
@@ -453,6 +456,21 @@ begin
 		extra_keys_o	=> extra_keys_s
 	);
 
+	-- Audio
+	audio: entity work.Audio_DACs
+	port map (
+		clock_i			=> clock_master_s,
+		reset_i			=> reset_s,
+		audio_scc_i		=> audio_scc_s,
+		audio_psg_i		=> audio_psg_s,
+		jt51_left_i		=> jt51_left_s,
+		jt51_right_i	=> jt51_right_s,
+		beep_i			=> beep_s,
+		audio_mix_l_o	=> open,
+		audio_mix_r_o	=> open,
+		dacout_l_o		=> audio_l_o,
+		dacout_r_o		=> audio_r_o
+	);
 
 	-- VRAM
 	vram: entity work.spram
@@ -510,7 +528,8 @@ begin
 		vs_in			=> rgb_vsync_n_s,
 		red_out		=> vga_r_o,
 		green_out	=> vga_g_o,
-		blue_out		=> vga_b_o
+		blue_out		=> vga_b_o,
+		osd_enable	=> open
 	);
 
 	-- VGA Output
@@ -575,8 +594,8 @@ begin
 		-- connection to host
 		sd_cs				=> sd_cs_s,
 		sd_sck			=> sd_sck_s,
-		sd_sdi			=> sd_sdi_s,
-		sd_sdo			=> sd_sdo_s		
+		sd_sdi			=> sd_sdo_s,
+		sd_sdo			=> sd_sdi_s		
 	);
 
 	-- Resets
@@ -638,5 +657,6 @@ begin
 	end generate;
 
 	-- Debug
+	led_n_o	<= sd_cs_s;
 	
 end architecture;
